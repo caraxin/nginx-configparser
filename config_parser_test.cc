@@ -23,15 +23,20 @@ protected:
 TEST_F(NginxStringConfigTest, ValidConfig) {
 	EXPECT_TRUE(ParseString("foo bar;"));
 	EXPECT_TRUE(ParseString("server {listen 80;}"));
-	//find bug here: nested brace errors
+	//find bug here: two consecutive right-braces
 	EXPECT_TRUE(ParseString("http { server { listen 80;} }"));
 }
 
 TEST_F(NginxStringConfigTest, InvalidConfig) {
-	EXPECT_FALSE(ParseString("foo bar"));
 	EXPECT_FALSE(ParseString("server { listen 80 }"));
 	EXPECT_FALSE(ParseString("server { listen 80; };"));
-	EXPECT_FALSE(ParseString("server ( listen 80 )"));
+	EXPECT_FALSE(ParseString("server { listen 80;; }"));
+
+	//find bug here: wrong/unclosed braces
+	EXPECT_FALSE(ParseString("server {listen 80;"));
+	EXPECT_FALSE(ParseString("server listen 80;}"));
+	EXPECT_FALSE(ParseString("server {listen 80;}}"));
+
 	EXPECT_FALSE(ParseString("server {}"));
 }
 
